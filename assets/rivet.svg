@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d1d25"/>
+      <stop offset="1" stop-color="#101014"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd277"/>
+      <stop offset="0.45" stop-color="#f2a93b"/>
+      <stop offset="1" stop-color="#d88917"/>
+    </linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.20"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)"/>
+  <rect x="8.5" y="8.5" width="239" height="239" rx="55.5" fill="none" stroke="#353542" stroke-width="3"/>
+  <path d="M128 46l52 30v60l-52 30-52-30V76z" fill="url(#metal)"/>
+  <path d="M128 46l52 30-52 30-52-30z" fill="url(#shade)"/>
+  <circle cx="128" cy="106" r="30" fill="#17171e"/>
+  <circle cx="128" cy="106" r="18" fill="url(#metal)"/>
+  <circle cx="128" cy="106" r="7" fill="#17171e"/>
+  <path d="M128 166v32" stroke="#f2a93b" stroke-width="12" stroke-linecap="round"/>
+  <path d="M100 198h56" stroke="#f2a93b" stroke-width="12" stroke-linecap="round"/>
+</svg>

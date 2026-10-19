@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Rivet
+GenericName=Native launcher for online-fixed games
+Comment=Launch games with OnlineFix, FreeTP and custom multiplayer fixes through Proton
+Exec=rivet
+Icon=rivet
+Terminal=false
+Categories=Game;Emulator;
+Keywords=game;launcher;proton;steam;onlinefix;rivet;
+StartupNotify=true
+StartupWMClass=rivet

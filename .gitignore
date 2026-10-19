@@ -1,0 +1,9 @@
+build/
+build-*/
+result
+result-*
+.direnv/
+.cache/
+compile_commands.json
+*.user
+rivet
