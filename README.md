@@ -164,6 +164,26 @@ nix run github:ne1i/rivet-launcher
 nix build github:ne1i/rivet-launcher
 ```
 
+Flakes and the `nix` command are still marked experimental. Enable them once:
+
+```bash
+mkdir -p ~/.config/nix
+printf 'experimental-features = nix-command flakes\n' >> ~/.config/nix/nix.conf
+```
+
+If you get `/nix/store: Permission denied` or `cannot write modified lock file`:
+
+- Run Nix as your user, **never with `sudo`**. `sudo nix run` drops your
+  Wayland/X11 session credentials and GUI apps then fail to open a display.
+- Use a multi-user Nix install with the daemon running
+  (`sudo systemctl enable --now nix-daemon`) and add yourself to the Nix users
+  group (`sudo usermod -aG nix-users "$USER"`), then log out and back in.
+- This repository ships `flake.lock`, so Nix does not need to modify the lock
+  file in the store.
+- On X11, install `xcb-util-cursor` if Qt reports that the xcb platform plugin
+  is missing `xcb-cursor0`. On Wayland, launch from your normal user session
+  (`WAYLAND_DISPLAY` set), or try `QT_QPA_PLATFORM=wayland`.
+
 Or from the checkout:
 
 ```bash
