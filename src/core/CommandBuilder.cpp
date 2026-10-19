@@ -68,19 +68,19 @@ LaunchCommand CommandBuilder::build(const Game &game, const QString &debugValue)
     if (game.steamRuntime && runtime.isEmpty())
         command.warnings.append(QStringLiteral("Steam Runtime is not installed for this Proton build; "
                                                "launching without it."));
+    QStringList fullCommand;
     if (!runtime.isEmpty()) {
-        QStringList wrapped;
-        wrapped << QStringLiteral("--") << proton << environmentArguments;
-        command.program = runtime;
-        command.arguments = wrapped;
+        fullCommand << runtime << QStringLiteral("--") << proton << environmentArguments;
     } else {
-        command.program = proton;
-        command.arguments = environmentArguments;
+        fullCommand << proton << environmentArguments;
     }
 
     const QStringList before = Utils::splitArguments(game.argsBefore);
     if (!before.isEmpty())
-        command.arguments = before + command.arguments;
+        fullCommand = before + fullCommand;
+
+    command.program = fullCommand.takeFirst();
+    command.arguments = fullCommand;
 
     QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
     QString overrides = game.overrides.trimmed();
