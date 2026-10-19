@@ -1,6 +1,5 @@
 #include "GameDetailPage.h"
 
-#include "BannerWidget.h"
 #include "FlowLayout.h"
 #include "Icons.h"
 #include "Theme.h"
@@ -9,12 +8,11 @@
 #include <QCheckBox>
 #include <QDir>
 #include <QFileInfo>
+#include <QFrame>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
-#include <QPainter>
-#include <QPainterPath>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QStyle>
@@ -22,23 +20,6 @@
 #include <QVBoxLayout>
 
 namespace {
-
-QPixmap roundedPixmap(const QPixmap &source, int size, int radius)
-{
-    if (source.isNull())
-        return {};
-    QPixmap result(size, size);
-    result.fill(Qt::transparent);
-    QPainter painter(&result);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    QPainterPath clip;
-    clip.addRoundedRect(QRectF(0, 0, size, size), radius, radius);
-    painter.setClipPath(clip);
-    const QPixmap scaled = source.scaled(size, size, Qt::KeepAspectRatioByExpanding,
-                                         Qt::SmoothTransformation);
-    painter.drawPixmap((size - scaled.width()) / 2, (size - scaled.height()) / 2, scaled);
-    return result;
-}
 
 QFrame *makeInfoCard(const QString &title, const QList<QPair<QString, QString>> &rows)
 {
@@ -105,20 +86,26 @@ GameDetailPage::GameDetailPage(QWidget *parent)
     layout->setContentsMargins(28, 22, 28, 30);
     layout->setSpacing(16);
 
-    m_banner = new BannerWidget;
-    layout->addWidget(m_banner);
-
-    // Main action row
-    auto *topRow = new QHBoxLayout;
-    topRow->setSpacing(10);
+    auto *header = new QFrame;
+    header->setObjectName(QStringLiteral("surface"));
+    auto *headerLayout = new QHBoxLayout(header);
+    headerLayout->setContentsMargins(20, 18, 20, 18);
+    headerLayout->setSpacing(20);
 
     m_icon = new QLabel;
-    m_icon->setFixedSize(64, 64);
-    m_icon->setStyleSheet(QStringLiteral("background: #1d1d25; border-radius: 14px;"));
-    topRow->addWidget(m_icon);
+    m_icon->setFixedSize(152, 152);
+    m_icon->setAlignment(Qt::AlignCenter);
+    m_icon->setStyleSheet(QStringLiteral(
+        "background: #17171e; border: 1px solid #2e2e3a; border-radius: 18px;"));
+    headerLayout->addWidget(m_icon, 0, Qt::AlignTop);
 
     auto *metaBox = new QVBoxLayout;
-    metaBox->setSpacing(3);
+    metaBox->setSpacing(6);
+    m_titleLabel = new QLabel;
+    m_titleLabel->setStyleSheet(QStringLiteral("font-size: 22pt; font-weight: 700;"));
+    m_titleLabel->setWordWrap(true);
+    m_titleLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    metaBox->addWidget(m_titleLabel);
     m_meta = new QLabel;
     m_meta->setObjectName(QStringLiteral("muted"));
     m_meta->setWordWrap(true);
@@ -132,8 +119,9 @@ GameDetailPage::GameDetailPage(QWidget *parent)
     hint->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
     metaBox->addWidget(hint);
     metaBox->addStretch();
-    topRow->addLayout(metaBox, 1);
 
+    auto *buttonRow = new QHBoxLayout;
+    buttonRow->setSpacing(10);
     m_playButton = new QPushButton(QStringLiteral("Play"));
     m_playButton->setObjectName(QStringLiteral("primary"));
     m_playButton->setIcon(Icons::icon(Icons::Name::Play, QColor(0x1a, 0x12, 0x06), 18));
@@ -146,8 +134,7 @@ GameDetailPage::GameDetailPage(QWidget *parent)
         else
             emit playRequested(m_game.name);
     });
-    topRow->addWidget(m_playButton, 0, Qt::AlignVCenter);
-
+    buttonRow->addWidget(m_playButton);
     m_settingsButton = new QPushButton(QStringLiteral("Settings"));
     m_settingsButton->setIcon(Icons::icon(Icons::Name::Settings, Theme::TextMuted, 17));
     m_settingsButton->setIconSize(QSize(17, 17));
@@ -155,23 +142,15 @@ GameDetailPage::GameDetailPage(QWidget *parent)
     connect(m_settingsButton, &QPushButton::clicked, this, [this] {
         emit settingsRequested(m_game.name);
     });
-    topRow->addWidget(m_settingsButton, 0, Qt::AlignVCenter);
-
-    layout->addLayout(topRow);
+    buttonRow->addWidget(m_settingsButton);
+    buttonRow->addStretch();
+    metaBox->addLayout(buttonRow);
+    headerLayout->addLayout(metaBox, 1);
+    layout->addWidget(header);
 
     // Secondary actions
     auto *actionHost = new QWidget;
     auto *actions = new FlowLayout(actionHost, 0, 4, 4);
-
-    auto *back = makeActionButton(QStringLiteral("Library"), Icons::Name::Back);
-    connect(back, &QPushButton::clicked, this, &GameDetailPage::backRequested);
-    actions->addWidget(back);
-
-    auto *separator = new QFrame;
-    separator->setFrameShape(QFrame::VLine);
-    separator->setStyleSheet(QStringLiteral("color: #2e2e3a;"));
-    separator->setFixedHeight(22);
-    actions->addWidget(separator);
 
     m_debugButton = makeActionButton(QStringLiteral("Debug"), Icons::Name::Debug);
     connect(m_debugButton, &QPushButton::clicked, this, [this] {
@@ -314,8 +293,7 @@ void GameDetailPage::setGame(const Game &game)
 {
     m_game = game;
     m_playTime = game.timeSpent;
-    m_banner->setImagePath(game.banner);
-    m_banner->setTitle(game.name);
+    m_titleLabel->setText(game.name);
     applyIcon();
     rebuildInfo();
 
@@ -328,9 +306,6 @@ void GameDetailPage::setGame(const Game &game)
 void GameDetailPage::setPlayTime(qint64 seconds)
 {
     m_playTime = seconds;
-    m_banner->setSubtitle(QStringLiteral("%1 played  •  %2")
-                              .arg(Utils::humanDuration(m_playTime),
-                                   m_game.proton.isEmpty() ? QStringLiteral("Proton") : m_game.proton));
     rebuildInfo();
 }
 
@@ -368,11 +343,13 @@ void GameDetailPage::applyIcon()
     if (!m_game.icon.isEmpty())
         source.load(m_game.icon);
     if (source.isNull()) {
-        m_icon->setPixmap(Icons::pixmap(Icons::Name::Game, Theme::TextMuted, 34));
+        m_icon->setPixmap(Icons::pixmap(Icons::Name::Game, Theme::TextMuted, 64));
         m_icon->setAlignment(Qt::AlignCenter);
         return;
     }
-    m_icon->setPixmap(roundedPixmap(source, 64, 14));
+    const int target = qBound(64, qMax(source.width(), source.height()), 128);
+    m_icon->setPixmap(source.scaled(target, target, Qt::KeepAspectRatio,
+                                    Qt::SmoothTransformation));
     m_icon->setAlignment(Qt::AlignCenter);
 }
 
@@ -402,9 +379,6 @@ void GameDetailPage::updatePlayButton()
 
 void GameDetailPage::rebuildInfo()
 {
-    m_banner->setSubtitle(QStringLiteral("%1 played  •  %2")
-                              .arg(Utils::humanDuration(m_playTime),
-                                   m_game.proton.isEmpty() ? QStringLiteral("Proton") : m_game.proton));
     m_meta->setText(QStringLiteral("Played %1  •  %2  •  %3")
                         .arg(Utils::humanDuration(m_playTime),
                              m_game.proton.isEmpty() ? QStringLiteral("Proton") : m_game.proton,

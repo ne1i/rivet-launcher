@@ -4,7 +4,6 @@
 
 #include <QWidget>
 
-class BannerWidget;
 class QCheckBox;
 class QLabel;
 class QPushButton;
@@ -49,8 +48,8 @@ private:
     bool m_busy = false;
     bool m_stopping = false;
 
-    BannerWidget *m_banner = nullptr;
     QLabel *m_icon = nullptr;
+    QLabel *m_titleLabel = nullptr;
     QPushButton *m_playButton = nullptr;
     QPushButton *m_settingsButton = nullptr;
     QToolButton *m_utilityButton = nullptr;

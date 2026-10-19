@@ -41,6 +41,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QMouseEvent>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QPushButton>
@@ -69,6 +70,7 @@ MainWindow::MainWindow(Config *store, ProtonManager *protons, Runner *runner,
     setFocusPolicy(Qt::StrongFocus);
 
     buildUi();
+    qApp->installEventFilter(this);
     setupTray();
     reloadLibrary();
     updateStatusBar();
@@ -210,6 +212,16 @@ void MainWindow::buildUi()
     topLayout->setContentsMargins(22, 10, 22, 10);
     topLayout->setSpacing(14);
 
+    m_backButton = new QPushButton;
+    m_backButton->setObjectName(QStringLiteral("ghost"));
+    m_backButton->setIcon(Icons::icon(Icons::Name::Back, Theme::TextMuted, 21));
+    m_backButton->setIconSize(QSize(21, 21));
+    m_backButton->setFixedSize(38, 38);
+    m_backButton->setToolTip(QStringLiteral("Back to library (mouse Back)"));
+    m_backButton->hide();
+    connect(m_backButton, &QPushButton::clicked, this, &MainWindow::showLibrary);
+    topLayout->addWidget(m_backButton);
+
     auto *logo = new QLabel;
     logo->setPixmap(Icons::appIcon().pixmap(40, 40));
     logo->setFixedSize(40, 40);
@@ -323,15 +335,22 @@ QWidget *MainWindow::buildLibraryPage()
     layout->setContentsMargins(30, 24, 30, 36);
     layout->setSpacing(18);
 
-    auto *heading = new QHBoxLayout;
+    auto *headingHost = new QWidget;
+    headingHost->setFixedHeight(48);
+    auto *heading = new QHBoxLayout(headingHost);
+    heading->setContentsMargins(0, 0, 0, 0);
+    heading->setSpacing(12);
     auto *title = new QLabel(QStringLiteral("Your library"));
     title->setObjectName(QStringLiteral("pageTitle"));
-    heading->addWidget(title);
+    title->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    heading->addWidget(title, 0, Qt::AlignVCenter);
     m_libraryCount = new QLabel;
     m_libraryCount->setObjectName(QStringLiteral("badge"));
-    heading->addWidget(m_libraryCount);
+    m_libraryCount->setFixedHeight(28);
+    m_libraryCount->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    heading->addWidget(m_libraryCount, 0, Qt::AlignVCenter);
     heading->addStretch();
-    layout->addLayout(heading);
+    layout->addWidget(headingHost);
 
     m_gridHost = new QWidget;
     m_grid = new FlowLayout(m_gridHost, 0, 18, 18);
@@ -364,6 +383,7 @@ QWidget *MainWindow::buildLibraryPage()
     emptyLayout->addWidget(emptyButton, 0, Qt::AlignHCenter);
     emptyLayout->addStretch();
     layout->addWidget(empty, 1);
+    layout->addStretch();
 
     scroll->setWidget(content);
     return scroll;
@@ -477,6 +497,8 @@ void MainWindow::updateLibraryVisibility()
 void MainWindow::showLibrary()
 {
     m_pages->setCurrentIndex(0);
+    if (m_backButton)
+        m_backButton->hide();
     setWindowTitle(QStringLiteral("Rivet"));
     m_search->clear();
     m_search->setFocus();
@@ -495,6 +517,9 @@ void MainWindow::showDetail(const QString &gameName)
                            DesktopEntry::exists(Paths::applicationsDir(), gameName));
     m_detail->setRunning(m_runner->isRunning() && m_runner->currentGame() == gameName);
     m_detail->setLaunchBusy(m_currentLaunch == gameName && !m_runner->isRunning());
+    m_lastGame = gameName;
+    if (m_backButton)
+        m_backButton->show();
     m_pages->setCurrentIndex(1);
     setWindowTitle(QStringLiteral("%1 — Rivet").arg(gameName));
 }
@@ -809,8 +834,39 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QApplication::quit();
 }
 
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::MouseButtonPress
+        && !QApplication::activeModalWidget()) {
+        auto *mouse = static_cast<QMouseEvent *>(event);
+        if (mouse->button() == Qt::BackButton) {
+            if (m_pages->currentIndex() == 1)
+                showLibrary();
+            return true;
+        }
+        if (mouse->button() == Qt::ForwardButton) {
+            if (m_pages->currentIndex() == 0 && !m_lastGame.isEmpty())
+                showDetail(m_lastGame);
+            return true;
+        }
+    }
+    return QMainWindow::eventFilter(watched, event);
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
+    if (event->modifiers() & Qt::AltModifier) {
+        if (event->key() == Qt::Key_Left) {
+            if (m_pages->currentIndex() == 1)
+                showLibrary();
+            return;
+        }
+        if (event->key() == Qt::Key_Right) {
+            if (m_pages->currentIndex() == 0 && !m_lastGame.isEmpty())
+                showDetail(m_lastGame);
+            return;
+        }
+    }
     if (event->key() == Qt::Key_Escape) {
         if (m_pages->currentIndex() == 1) {
             showLibrary();

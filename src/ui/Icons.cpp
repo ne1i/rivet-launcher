@@ -5,10 +5,13 @@
 #include <QPen>
 #include <QPolygonF>
 
+#include <cmath>
+
 namespace {
 
 void draw(QPainter &p, Icons::Name name)
 {
+    const QColor iconColor = p.pen().color();
     QPen pen(p.pen());
     pen.setWidthF(1.8);
     pen.setCapStyle(Qt::RoundCap);
@@ -37,13 +40,38 @@ void draw(QPainter &p, Icons::Name name)
         p.drawLine(QPointF(5, 12), QPointF(19, 12));
         break;
     case Icons::Name::Settings: {
-        p.drawEllipse(QPointF(12, 12), 3.2, 3.2);
-        for (int i = 0; i < 8; ++i) {
-            const double angle = i * M_PI / 4.0;
-            const QPointF from(12 + std::cos(angle) * 6.2, 12 + std::sin(angle) * 6.2);
-            const QPointF to(12 + std::cos(angle) * 8.6, 12 + std::sin(angle) * 8.6);
-            p.drawLine(from, to);
+        constexpr int teeth = 8;
+        constexpr double outer = 9.4;
+        constexpr double root = 6.8;
+        const double sector = 2.0 * M_PI / teeth;
+        QPainterPath path;
+        for (int i = 0; i < teeth; ++i) {
+            const double base = i * sector;
+            const QPointF p1(12 + root * std::cos(base - sector * 0.44),
+                             12 + root * std::sin(base - sector * 0.44));
+            const QPointF p2(12 + outer * std::cos(base - sector * 0.21),
+                             12 + outer * std::sin(base - sector * 0.21));
+            const QPointF p3(12 + outer * std::cos(base + sector * 0.21),
+                             12 + outer * std::sin(base + sector * 0.21));
+            const QPointF p4(12 + root * std::cos(base + sector * 0.44),
+                             12 + root * std::sin(base + sector * 0.44));
+            if (i == 0)
+                path.moveTo(p1);
+            else
+                path.lineTo(p1);
+            path.lineTo(p2);
+            path.lineTo(p3);
+            path.lineTo(p4);
         }
+        path.closeSubpath();
+
+        QPainterPath hole;
+        hole.addEllipse(QPointF(12, 12), 3.0, 3.0);
+        path = path.subtracted(hole);
+
+        p.setPen(Qt::NoPen);
+        p.setBrush(iconColor);
+        p.drawPath(path);
         break;
     }
     case Icons::Name::Trash:

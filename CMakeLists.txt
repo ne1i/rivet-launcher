@@ -39,7 +39,6 @@ set(RIVET_SOURCES
     src/ui/Icons.cpp
     src/ui/GameCard.cpp
     src/ui/FlowLayout.cpp
-    src/ui/BannerWidget.cpp
     src/ui/MainWindow.cpp
     src/ui/GameDetailPage.cpp
     src/ui/AddGameWizard.cpp

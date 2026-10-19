@@ -36,6 +36,7 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     void buildUi();
@@ -70,6 +71,7 @@ private:
     bool m_minimalMode = false;
     QString m_initialLaunch;
     QString m_currentLaunch;
+    QString m_lastGame;
 
     QStackedWidget *m_pages = nullptr;
     QWidget *m_libraryPage = nullptr;
@@ -80,6 +82,7 @@ private:
     QLabel *m_emptyTitle = nullptr;
     QLabel *m_emptyHint = nullptr;
     QPushButton *m_addButton = nullptr;
+    QPushButton *m_backButton = nullptr;
     QLineEdit *m_search = nullptr;
     GameDetailPage *m_detail = nullptr;
     Toast *m_toast = nullptr;
