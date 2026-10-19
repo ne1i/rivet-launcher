@@ -79,8 +79,10 @@ target_compile_options(rivet PRIVATE
 )
 
 install(TARGETS rivet RUNTIME DESTINATION bin)
-install(FILES packaging/rivet.desktop DESTINATION share/applications)
+configure_file(packaging/rivet.desktop.in "${CMAKE_CURRENT_BINARY_DIR}/rivet.desktop" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/rivet.desktop" DESTINATION share/applications)
 install(FILES assets/rivet.svg DESTINATION share/icons/hicolor/scalable/apps RENAME rivet.svg)
+install(FILES assets/rivet-256.png DESTINATION share/icons/hicolor/256x256/apps RENAME rivet.png)
 
 include(CTest)
 
