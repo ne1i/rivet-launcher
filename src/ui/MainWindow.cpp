@@ -25,6 +25,7 @@
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QDir>
 #include <QDragEnterEvent>
 #include <QDropEvent>
