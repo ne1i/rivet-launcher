@@ -147,8 +147,6 @@ Every push to `master` creates a release with:
 
 - `rivet-linux-x86_64` and `rivet-linux-aarch64` — directly runnable Linux
   executables;
-- `rivet-<commit>-linux-<arch>.tar.gz` — the executable plus desktop entry,
-  icon and documentation;
 - `SHA256SUMS-*` — checksums.
 
 ```bash
@@ -156,13 +154,8 @@ chmod +x rivet-linux-x86_64
 ./rivet-linux-x86_64
 ```
 
-There is no `.exe` download: `.exe` is a Windows executable format, while Rivet
-is a Linux application that uses Linux Steam/Proton and Wine. Linux programs
-normally have no filename extension at all.
-
-The raw binaries are dynamically linked against Qt 6 and call the helper
-programs listed under Dependencies. The tarball is not an installer; extract it
-and run `bin/rivet`.
+The binaries are dynamically linked against Qt 6 and call the helper programs
+listed under Dependencies.
 
 ## Build
 

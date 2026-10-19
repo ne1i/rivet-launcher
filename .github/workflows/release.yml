@@ -42,22 +42,10 @@ jobs:
       - name: Package
         run: |
           set -euo pipefail
-          pkg="rivet-${GITHUB_SHA::7}-linux-${{ matrix.arch }}"
-          mkdir -p "dist/$pkg/bin"
-          mkdir -p "dist/$pkg/share/applications"
-          mkdir -p "dist/$pkg/share/icons/hicolor/scalable/apps"
-
-          cp build/rivet "dist/$pkg/bin/rivet"
-          cp packaging/rivet.desktop "dist/$pkg/share/applications/rivet.desktop"
-          cp assets/rivet.svg "dist/$pkg/share/icons/hicolor/scalable/apps/rivet.svg"
-          cp README.md LICENSE DISCLAIMER.md THIRD_PARTY.md "dist/$pkg/"
-
-          # A directly downloadable Linux executable (no .exe extension).
+          mkdir -p dist
           cp build/rivet "dist/rivet-linux-${{ matrix.arch }}"
           chmod +x "dist/rivet-linux-${{ matrix.arch }}"
-
-          tar -C dist -czf "dist/$pkg.tar.gz" "$pkg"
-          (cd dist && sha256sum "$pkg.tar.gz" "rivet-linux-${{ matrix.arch }}" > "SHA256SUMS-${{ matrix.arch }}")
+          (cd dist && sha256sum "rivet-linux-${{ matrix.arch }}" > "SHA256SUMS-${{ matrix.arch }}")
 
       - uses: actions/upload-artifact@v4
         with:
@@ -90,12 +78,7 @@ jobs:
             - `rivet-linux-x86_64` / `rivet-linux-aarch64`: standalone Linux
               executables. `chmod +x` and run. Qt 6 and the runtime helpers must
               be installed (see the README).
-            - `rivet-*-linux-*.tar.gz`: the executable plus the desktop entry,
-              icon and documentation.
             - `SHA256SUMS-*`: checksums.
-
-            Linux executables do not use a `.exe` extension; `.exe` files are
-            Windows programs and cannot run natively on Linux.
           prerelease: false
           make_latest: "true"
           generate_release_notes: false
