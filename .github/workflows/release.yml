@@ -1,0 +1,88 @@
+name: Build release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Linux ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build g++ qt6-base-dev qt6-svg-dev
+
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DRIVET_BUILD_TESTS=OFF
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+
+      - name: Package
+        run: |
+          set -euo pipefail
+          pkg="rivet-${GITHUB_SHA::7}-linux-${{ matrix.arch }}"
+          mkdir -p "dist/$pkg/bin"
+          mkdir -p "dist/$pkg/share/applications"
+          mkdir -p "dist/$pkg/share/icons/hicolor/scalable/apps"
+
+          cp build/rivet "dist/$pkg/bin/rivet"
+          cp packaging/rivet.desktop "dist/$pkg/share/applications/rivet.desktop"
+          cp assets/rivet.svg "dist/$pkg/share/icons/hicolor/scalable/apps/rivet.svg"
+          cp README.md LICENSE DISCLAIMER.md THIRD_PARTY.md "dist/$pkg/"
+
+          tar -C dist -czf "dist/$pkg.tar.gz" "$pkg"
+          (cd dist && sha256sum "$pkg.tar.gz" > "$pkg.tar.gz.sha256")
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rivet-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+
+  release:
+    name: Publish rolling release
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.sha }}
+          name: Rivet build ${{ github.sha }}
+          body: |
+            Automated build from commit `${{ github.sha }}` on `master`.
+
+            - Linux x86_64
+            - Linux aarch64
+
+            This is a rolling per-commit build, not a stable release.
+          prerelease: true
+          generate_release_notes: false
+          files: dist/*
+          fail_on_unmatched_files: true

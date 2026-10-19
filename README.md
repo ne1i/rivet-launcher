@@ -1,5 +1,7 @@
 # Rivet
 
+[![Build release](https://github.com/ne1i/rivet-launcher/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/ne1i/rivet-launcher/actions/workflows/release.yml)
+
 **A native Linux launcher for online-fixed games.** Rivet ties a game, its
 multiplayer fix, Proton, Steam and the right Wine environment together, without
 bundling Java, JPHP or a browser runtime.
