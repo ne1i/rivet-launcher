@@ -173,6 +173,19 @@ sudo cmake --install build
 
 This installs `rivet` to `/usr/local/bin`, the desktop entry and the icon.
 
+### Arch Linux (AUR)
+
+AUR packaging for `rivet-launcher-git` is included under
+`packaging/aur/rivet-launcher-git`. It is a VCS package, so it automatically
+tracks the latest `master` commit; no per-commit AUR upload is needed. Once the
+package is published:
+
+```bash
+paru -S rivet-launcher-git
+# or
+yay -S rivet-launcher-git
+```
+
 ### Nix / NixOS
 
 ```bash

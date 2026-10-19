@@ -1,0 +1,46 @@
+# Maintainer: ne1i <valentinfroment7@gmail.com>
+pkgname=rivet-launcher-git
+pkgver=1.0.0.r0.g0000000
+pkgrel=1
+pkgdesc='Native Linux launcher for online-fixed games (development version)'
+arch=('x86_64' 'aarch64')
+url='https://github.com/ne1i/rivet-launcher'
+license=('AGPL-3.0-only')
+depends=('qt6-base' 'qt6-svg')
+makedepends=('cmake' 'ninja' 'git')
+optdepends=(
+  'steam: native Steam client'
+  'unrar: extract RAR game archives'
+  'p7zip: icon extraction fallback'
+  'ffmpeg: convert extracted icons'
+  'icoextract: extract icons from Windows executables'
+  'aria2: game downloads'
+  'winetricks: Wine tools menu entry'
+  'xdg-user-dirs: desktop and download folder detection'
+)
+provides=('rivet-launcher')
+conflicts=('rivet-launcher')
+source=("git+https://github.com/ne1i/rivet-launcher.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "${srcdir}/rivet-launcher"
+  printf '1.0.0.r%s.g%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+build() {
+  cd "${srcdir}/rivet-launcher"
+  cmake -S . -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DRIVET_BUILD_TESTS=OFF
+  cmake --build build
+}
+
+package() {
+  cd "${srcdir}/rivet-launcher"
+  DESTDIR="${pkgdir}" cmake --install build
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 DISCLAIMER.md "${pkgdir}/usr/share/doc/${pkgname}/DISCLAIMER.md"
+  install -Dm644 THIRD_PARTY.md "${pkgdir}/usr/share/doc/${pkgname}/THIRD_PARTY.md"
+}
