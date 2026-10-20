@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rivet — native Linux launcher for online-fixed games</title>
+  <meta name="description" content="Rivet is a fast, native Qt 6 launcher for games using OnlineFix, FreeTP and custom multiplayer fixes on Linux. Proton, Steam overlay, JSON config, Nix support.">
+  <meta name="theme-color" content="#101014">
+  <link rel="canonical" href="https://ne1i.github.io/rivet-launcher/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Rivet — native Linux launcher for online-fixed games">
+  <meta property="og:description" content="Fast Qt 6 launcher for OnlineFix, FreeTP and custom multiplayer fixes on Linux.">
+  <meta property="og:url" content="https://ne1i.github.io/rivet-launcher/">
+  <meta property="og:image" content="https://ne1i.github.io/rivet-launcher/assets/library.webp">
+  <link rel="icon" href="assets/rivet.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap nav">
+      <a class="brand" href="#top" aria-label="Rivet home">
+        <img src="assets/rivet.svg" width="34" height="34" alt="">
+        <span>Rivet</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a href="#config">Config</a>
+        <a href="https://github.com/ne1i/rivet-launcher">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero wrap">
+      <div class="hero-copy">
+        <p class="eyebrow">Linux · Qt 6 · AGPL-3.0</p>
+        <h1>Your games.<br>Your fixes.<br><span>One click.</span></h1>
+        <p class="lead">
+          Rivet launches games that use OnlineFix, FreeTP and custom multiplayer
+          fixes through Proton. DLL overrides, Steam overlay, runtime and prefix
+          are handled for you — without Java, Electron or a browser runtime.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/ne1i/rivet-launcher/releases/latest">Download</a>
+          <a class="button" href="https://github.com/ne1i/rivet-launcher">View source</a>
+        </div>
+        <p class="tiny">Linux x86_64 and aarch64 · animation-free · no telemetry</p>
+      </div>
+      <img class="app-icon" src="assets/rivet.svg" width="210" height="210" alt="Rivet app icon">
+    </section>
+
+    <section class="wrap shot-wrap" aria-label="Rivet screenshot">
+      <img class="shot" src="assets/library.webp" width="1600" height="633" alt="Rivet game library">
+    </section>
+
+    <section id="features" class="wrap section">
+      <h2>Everything between the download and Play</h2>
+      <p class="section-lead">A focused launcher, not a storefront.</p>
+      <div class="grid">
+        <article class="card">
+          <h3>Library and covers</h3>
+          <p>Instant search, game icons, Steam covers and play time. Press Enter to open a game, Esc or your mouse Back button to return.</p>
+        </article>
+        <article class="card">
+          <h3>Fix detection</h3>
+          <p>OnlineFix, FreeTP and EOSFix files are detected and patched: AppIDs, ExtraProtection, Photon, winmm/dlllist and the SteamFix bypass.</p>
+        </article>
+        <article class="card">
+          <h3>Proton manager</h3>
+          <p>Browse GE-Proton releases from GitHub, download, unpack and remove builds. Incompatible CPU architectures are filtered out.</p>
+        </article>
+        <article class="card">
+          <h3>Steam integration</h3>
+          <p>Starts Steam and waits for sign-in when needed, injects the overlay, and supports Steam Linux Runtime and native Wayland.</p>
+        </article>
+        <article class="card">
+          <h3>Add any way you like</h3>
+          <p>Add an extracted folder, a RAR archive, a FreeTP installer, or download a game from a Hydra/OnlineFix JSON source with aria2c.</p>
+        </article>
+        <article class="card">
+          <h3>Wine tools</h3>
+          <p>Open winecfg, task manager, explorer, regedit, a command prompt or Winetricks in the game prefix. Run any .exe there too.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap section detail-split">
+      <img class="shot" src="assets/detail.webp" width="1400" height="902" alt="Rivet game page with icon card, Play and game settings">
+      <div>
+        <h2>A game page that gets out of the way</h2>
+        <p class="section-lead">No stretched cover art. Just the game icon, the facts, and the controls you need.</p>
+        <ul class="checks">
+          <li>Back arrow, mouse Back/Forward, <code>Esc</code> and <code>Alt+←/→</code></li>
+          <li>Play, Settings, Debug, Wine tools, folders, run an .exe, logs</li>
+          <li>Per-game Proton, prefix, arguments, environment and DLL overrides</li>
+          <li>Desktop and application-menu shortcuts, play time and Steam links</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="wrap section split">
+      <div>
+        <h2>Install</h2>
+        <p class="section-lead">One compiled binary. No bundled runtime.</p>
+        <h3>Release binary</h3>
+        <pre><code>chmod +x rivet-linux-x86_64
+./rivet-linux-x86_64</code></pre>
+        <p class="muted">Use <code>rivet-linux-aarch64</code> on ARM64. Qt 6, Steam,
+          unrar, 7z, tar and aria2 are needed for the corresponding features.</p>
+
+        <h3>Nix</h3>
+        <pre><code>nix run github:ne1i/rivet-launcher</code></pre>
+        <p class="muted">Enable <code>nix-command flakes</code> first. The flake is
+          built and tested in CI.</p>
+
+        <h3>From source</h3>
+        <pre><code>cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j"$(nproc)"
+sudo cmake --install build</code></pre>
+        <p class="muted">Arch packaging for <code>rivet-launcher-git</code> is in
+          <code>packaging/aur</code>. It is not published on AUR yet.</p>
+      </div>
+
+      <div id="config">
+        <h2>Configuration</h2>
+        <p class="section-lead">One versioned JSON file, not a pile of INI sections.</p>
+        <pre><code>~/.config/rivet/config.json
+~/.local/share/rivet/</code></pre>
+        <p>Settings, games, launch arguments, environment variables and feature
+          flags all live in a structured document. On first start Rivet migrates
+          an existing <code>~/.config/OFME-Linux</code> library automatically and
+          leaves the old files untouched.</p>
+        <pre><code>"environment": {
+  "LC_ALL": "fr_FR.UTF-8"
+},
+"steam": {
+  "app_id": "12345",
+  "overlay_app_id": "480"
+}</code></pre>
+        <p class="muted">Covers and icons are copied to
+          <code>~/.local/share/rivet</code>; existing Proton and prefix folders are
+          reused in place.</p>
+      </div>
+    </section>
+
+    <section class="wrap section legal">
+      <h2>Before you use it</h2>
+      <p>
+        Rivet does not host or distribute games, cracks or fixes. You must own
+        the games you run and comply with copyright, anti-circumvention, contract
+        and local law. Using third-party fixes with Steam may violate its terms
+        and can lead to account restrictions. Nothing here is legal advice.
+      </p>
+      <p>
+        <a href="https://github.com/ne1i/rivet-launcher/blob/master/DISCLAIMER.md">Read the full disclaimer</a>
+        · <a href="https://github.com/ne1i/rivet-launcher/blob/master/THIRD_PARTY.md">Third-party notices</a>
+      </p>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <div>
+      <img src="assets/rivet.svg" width="26" height="26" alt="">
+      <span>Rivet</span>
+    </div>
+    <p>Native Linux launcher for online-fixed games. AGPL-3.0.</p>
+    <p><a href="https://github.com/ne1i/rivet-launcher">GitHub</a> · <a href="https://github.com/ne1i/rivet-launcher/releases">Releases</a> · <a href="https://github.com/ne1i/rivet-launcher/blob/master/README.md">Documentation</a></p>
+  </footer>
+</body>
+</html>

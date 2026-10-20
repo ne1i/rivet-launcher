@@ -1,138 +1,86 @@
 # Rivet
 
-[![Build release](https://github.com/ne1i/rivet-launcher/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/ne1i/rivet-launcher/actions/workflows/release.yml)
+[![Build](https://github.com/ne1i/rivet-launcher/actions/workflows/release.yml/badge.svg?branch=master)](https://github.com/ne1i/rivet-launcher/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/ne1i/rivet-launcher?label=release)](https://github.com/ne1i/rivet-launcher/releases/latest)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-f2a93b)](LICENSE)
+[![Nix flake](https://img.shields.io/badge/nix-flake-5277c3)](flake.nix)
 
-**A native Linux launcher for online-fixed games.** Rivet ties a game, its
-multiplayer fix, Proton, Steam and the right Wine environment together, without
-bundling Java, JPHP or a browser runtime.
+**A native Linux launcher for games with OnlineFix, FreeTP, EOSFix and custom
+multiplayer fixes.**
 
-Rivet is a from-scratch C++20 / Qt 6 rewrite of
-[ZzEdovec/onlinefix-linux](https://github.com/ZzEdovec/onlinefix-linux). The UI
-is deliberately animation-free: no fades, spinners, splash screens or delays.
+Rivet puts the game, its fix, Proton, Steam and the right Wine environment
+together in one click. It is a C++20 / Qt 6 rewrite of
+[ZzEdovec/onlinefix-linux](https://github.com/ZzEdovec/onlinefix-linux), with no
+JRE, JavaFX, Electron or browser runtime.
+
+**Website:** https://ne1i.github.io/rivet-launcher/
+
+<img src="docs/assets/detail.webp" alt="Rivet game page" width="900">
 
 > **Legal notice:** Rivet does not host or distribute games, cracks or fixes.
 > You must own the games you run and comply with copyright, anti-circumvention,
-> contract and local law. Read [`DISCLAIMER.md`](DISCLAIMER.md) before using it.
-> It is not legal advice, and no disclaimer can make an unlawful act lawful.
+> contract and local law. Read [`DISCLAIMER.md`](DISCLAIMER.md). Not legal advice.
+
+## Why Rivet
+
+- **Fast and native.** One compiled Qt 6 binary; no embedded runtime and no
+  animations.
+- **Your library already works.** It migrates the old `OFME-Linux` INI files to
+  a structured JSON config on first start.
+- **Everything configured for you.** DLL overrides, Steam overlay, Steam Linux
+  Runtime, native Wayland, prefix and Proton version.
+- **Maintained feature set.** Fix detection, RAR and installer support, Proton
+  management, downloads, shortcuts, logs and play time.
 
 ## Features
 
-- **Library** with covers, icons, play time, instant search and a detail page.
-- **Add games** from an extracted folder, a RAR archive, or a FreeTP/OnlineFix
-  installer.
-- **Fix detection and patches** for OnlineFix, FreeTP and EOSFix:
+- Library with covers, icons, search, play time and a game page.
+- Add extracted games, RAR archives, FreeTP/OnlineFix installers, or downloads
+  from a Hydra/OnlineFix JSON source through `aria2c`.
+- OnlineFix / FreeTP / EOSFix detection and patches:
   - `OnlineFix.ini` / `SteamFix.ini` AppIDs and `ExtraProtection`
-  - FreeTP `SteamFix` section patch
+  - FreeTP SteamFix section patch
   - Photon Launcher `Newtonsoft.Json.dll`
-  - `winmm.txt` / `dlllist.txt` DLL overrides
+  - `winmm.txt` / `dlllist.txt` overrides
   - FreeTP “bypass Steam not running” shim
-- **Proton manager**: browse GE-Proton releases from GitHub, download, unpack,
-  remove, choose a default, and detect incompatible CPU architectures.
-- **Steam integration**: start Steam and wait for sign-in; inject the overlay;
-  use Steam Linux Runtime; use native Wayland.
-- **Per-game launch settings**: arguments before/after the executable,
-  environment variables, DLL overrides, prefix path, cover and icon.
-- **Wine tools**: `winecfg`, task manager, control panel, explorer, command
-  prompt, registry editor, Winetricks, and run any `.exe` in the prefix.
-- **Game downloads** from a user-supplied Hydra/OnlineFix JSON source through
-  `aria2c`, with progress, cancel and resume.
-- **Shortcuts**, single-instance launch mode, tray support, logs and play-time
-  tracking.
+- Proton browser: list, download, unpack and remove GE-Proton builds, with CPU
+  architecture filtering.
+- Steam auto-start/sign-in, overlay injection, Steam Linux Runtime, native
+  Wayland, WINED3D.
+- Per-game launch arguments, environment variables, DLL overrides, prefix,
+  cover and icon.
+- Wine tools, run any `.exe` in the prefix, game logs, desktop/menu shortcuts.
+- Back navigation with mouse Back/Forward, `Esc` and `Alt+←/→`.
 
-## Configuration
+## Install
 
-Rivet uses its own versioned JSON document — not the old INI files:
+### Release binary
 
-```
-$XDG_CONFIG_HOME/rivet/config.json      # usually ~/.config/rivet/config.json
-$XDG_DATA_HOME/rivet/                   # usually ~/.local/share/rivet/
-  ├── icons/
-  ├── covers/
-  ├── protons/                          # default for new setups
-  └── prefixes/                         # default for new setups
+Download `rivet-linux-x86_64` or `rivet-linux-aarch64` from the
+[latest release](https://github.com/ne1i/rivet-launcher/releases/latest), then:
+
+```bash
+chmod +x rivet-linux-x86_64
+./rivet-linux-x86_64
 ```
 
-The document is structured instead of section/key soup. Environment variables
-are a real JSON object (no more four-backslash escaping), and optional data is
-grouped by meaning:
+Every push to `master` publishes a fresh build with both architectures and
+SHA-256 checksums. The binary is dynamically linked against Qt 6; install the
+runtime helpers you need for your use case.
 
-```json
-{
-  "format": "rivet",
-  "version": 1,
-  "settings": {
-    "default_proton": "GE-Proton Latest",
-    "no_steam_request": false,
-    "fullscreen": false,
-    "downloads_source": "",
-    "paths": {
-      "downloads": "",
-      "installs": "",
-      "prefixes": "",
-      "protons": ""
-    },
-    "new_games": {
-      "native_wayland": true,
-      "wined3d": false
-    }
-  },
-  "games": [
-    {
-      "name": "Example Game",
-      "executable": "/games/Example/Example.exe",
-      "game_dir": "/games/Example",
-      "prefix": "/games/Example/Rivet Prefix",
-      "proton": "GE-Proton Latest",
-      "cover": "/home/user/.local/share/rivet/covers/12345.jpg",
-      "icon": "/home/user/.local/share/rivet/icons/AbCdEf.png",
-      "dll_overrides": "onlinefix64=n;steam_api64=n",
-      "fix_dir": "/games/Example",
-      "args": { "before": "", "after": "" },
-      "environment": { "LC_ALL": "fr_FR.UTF-8" },
-      "steam": { "app_id": "12345", "overlay_app_id": "480" },
-      "time_played": 3600,
-      "features": {
-        "steam_overlay": true,
-        "steam_runtime": true,
-        "wined3d": false,
-        "native_wayland": true
-      }
-    }
-  ]
-}
-```
-
-### One-time migration
-
-On first start, if `~/.config/rivet/config.json` does not exist, Rivet converts
-`~/.config/OFME-Linux/Games.ini` and `Launcher.ini` automatically:
-
-- all games, play time, DLL overrides, launch options and feature flags move to
-  the JSON document;
-- the legacy environment string is parsed into a proper object;
-- covers and icons are copied into `~/.local/share/rivet/{covers,icons}`;
-- existing Proton and prefix roots are reused **in place**, so multi-gigabyte
-  prefixes and Proton builds are not duplicated;
-- the old files are left untouched as a backup.
-
-No further reads from the old format happen after migration.
-
-## Dependencies
+### Dependencies
 
 Required:
 
-- `steam` — the native package, **not** Flatpak or Snap
-- `unrar` — RAR archives
-- `7z` — icon extraction fallback
-- `tar` — GE-Proton archives
-- `aria2` — game downloads
-- Qt 6 (Core, Gui, Widgets, Network, Concurrent, Svg)
+- native **Steam** (not Flatpak or Snap)
+- **Qt 6** (Core, Gui, Widgets, Network, Concurrent, Svg)
+- **unrar** for RAR archives
+- **7z** for icon extraction fallback
+- **tar** for GE-Proton archives
+- **aria2** for game downloads
 
-Recommended:
-
-- `ffmpeg` — convert extracted `.ico` icons
-- `icoextract` — better icon extraction than 7z
-- `winetricks` — the Wine tools menu entry
+Optional: **ffmpeg** (icon conversion), **icoextract** (better icons),
+**winetricks** (Wine tools menu).
 
 Arch Linux:
 
@@ -141,106 +89,89 @@ sudo pacman -S --needed base-devel cmake qt6-base qt6-svg steam unrar 7zip \
     ffmpeg icoextract winetricks aria2
 ```
 
-## Releases
-
-Every push to `master` creates a release with:
-
-- `rivet-linux-x86_64` and `rivet-linux-aarch64` — directly runnable Linux
-  executables;
-- `SHA256SUMS-*` — checksums.
-
-```bash
-chmod +x rivet-linux-x86_64
-./rivet-linux-x86_64
-```
-
-The binaries are dynamically linked against Qt 6 and call the helper programs
-listed under Dependencies.
-
-## Build
-
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j"$(nproc)"
-./build/rivet
-```
-
-Install:
-
-```bash
-sudo cmake --install build
-```
-
-This installs `rivet` to `/usr/local/bin`, the desktop entry and the icon.
-
-### Arch Linux (AUR)
-
-AUR packaging for `rivet-launcher-git` is included under
-`packaging/aur/rivet-launcher-git`. It is a VCS package, so it automatically
-tracks the latest `master` commit; no per-commit AUR upload is needed. Once the
-package is published:
-
-```bash
-paru -S rivet-launcher-git
-# or
-yay -S rivet-launcher-git
-```
-
-### Nix / NixOS
+### Nix
 
 ```bash
 nix run github:ne1i/rivet-launcher
 nix build github:ne1i/rivet-launcher
 ```
 
-Flakes and the `nix` command are still marked experimental. Enable them once:
+Enable flakes once if your Nix still requires it:
 
 ```bash
 mkdir -p ~/.config/nix
 printf 'experimental-features = nix-command flakes\n' >> ~/.config/nix/nix.conf
 ```
 
-If you get `/nix/store: Permission denied` or `cannot write modified lock file`:
-
-- Run Nix as your user, **never with `sudo`**. `sudo nix run` drops your
-  Wayland/X11 session credentials and GUI apps then fail to open a display.
-- Use a multi-user Nix install with the daemon running
-  (`sudo systemctl enable --now nix-daemon`) and add yourself to the Nix users
-  group (`sudo usermod -aG nix-users "$USER"`), then log out and back in.
-- This repository ships `flake.lock`, so Nix does not need to modify the lock
-  file in the store.
-- On X11, install `xcb-util-cursor` if Qt reports that the xcb platform plugin
-  is missing `xcb-cursor0`. On Wayland, launch from your normal user session
-  (`WAYLAND_DISPLAY` set), or try `QT_QPA_PLATFORM=wayland`.
-
-Or from the checkout:
-
-```bash
-nix develop
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j"$(nproc)"
-```
-
-The flake wraps the binary with the runtime helpers it needs (`aria2`, `ffmpeg`,
-`icoextract`, `7z`, `winetricks`, `tar`, `xdg-utils`, `procps`). Steam is not
-included by the flake; enable the native Steam package in your NixOS
-configuration. `unrar` is unfree, so add it explicitly if you want RAR support:
+Run Nix as your user, not with `sudo`. The flake is built in CI. `unrar` is
+unfree and can be added explicitly on NixOS:
 
 ```nix
 nixpkgs.config.allowUnfree = true;
 environment.systemPackages = [ pkgs.unrar ];
 ```
 
-## Tests
+### Arch Linux (AUR)
+
+AUR packaging for `rivet-launcher-git` is in
+[`packaging/aur/rivet-launcher-git`](packaging/aur/rivet-launcher-git). It is a
+VCS package and automatically tracks the latest `master` commit. It is not
+published on AUR yet.
+
+### From source
 
 ```bash
-cmake -S . -B build -DRIVET_BUILD_TESTS=ON
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j"$(nproc)"
-ctest --test-dir build --output-on-failure
+sudo cmake --install build
 ```
 
-The test covers legacy INI → JSON migration, structured environment values,
-the add-game pipeline and a JSON round-trip.
+This installs `rivet`, the desktop entry and the icon.
+
+## Configuration
+
+Rivet uses one versioned JSON document:
+
+```
+$XDG_CONFIG_HOME/rivet/config.json     # ~/.config/rivet/config.json
+$XDG_DATA_HOME/rivet/                  # ~/.local/share/rivet/
+  ├── covers/
+  ├── icons/
+  ├── protons/
+  └── prefixes/
+```
+
+Environment variables are a real object, launch data is grouped, and the whole
+file is validated and written atomically.
+
+```json
+{
+  "format": "rivet",
+  "version": 1,
+  "settings": {
+    "default_proton": "GE-Proton Latest",
+    "paths": { "protons": "", "prefixes": "" },
+    "new_games": { "native_wayland": true, "wined3d": false }
+  },
+  "games": [
+    {
+      "name": "Example Game",
+      "executable": "/games/Example/Example.exe",
+      "game_dir": "/games/Example",
+      "prefix": "/games/Example/Rivet Prefix",
+      "proton": "GE-Proton Latest",
+      "environment": { "LC_ALL": "fr_FR.UTF-8" },
+      "steam": { "app_id": "12345", "overlay_app_id": "480" },
+      "features": { "steam_overlay": true, "steam_runtime": true }
+    }
+  ]
+}
+```
+
+On first start, if `~/.config/rivet/config.json` does not exist, Rivet converts
+`~/.config/OFME-Linux/Games.ini` and `Launcher.ini` automatically. Covers and
+icons are copied into the new data folder; existing Proton and prefix folders
+are reused in place. The old files are left untouched.
 
 ## Command line
 
@@ -253,21 +184,39 @@ rivet --print-command "Game name"  Print the Proton command and environment
 rivet --version                    Show the version
 ```
 
-`--print-command` is useful to debug environment/override problems without
+`--print-command` is useful for debugging environment or override issues without
 starting a game.
 
-## Notes
+## Development
 
-- Shortcuts created by Rivet point at the installed `rivet` binary. Old
-  shortcuts from previous launchers can be removed and recreated from a game's
-  page.
-- Some game entries may point at executables on unmounted drives. Rivet reports
-  this instead of failing silently.
-- Steam must be the native package. Flatpak and Snap Steam installations do not
-  work with Proton prefixes.
-- Rivet is not affiliated with Valve, Steam, OnlineFix, FreeTP, EOSFix or any
-  game publisher. See [`THIRD_PARTY.md`](THIRD_PARTY.md) and
-  [`DISCLAIMER.md`](DISCLAIMER.md).
+```bash
+cmake -S . -B build -DRIVET_BUILD_TESTS=ON
+cmake --build build -j"$(nproc)"
+ctest --test-dir build --output-on-failure
+```
+
+The headless test covers legacy INI → JSON migration, structured environment
+values, the add-game pipeline and a JSON round-trip.
+
+Project layout:
+
+```
+src/core/    config, Proton, fixes, launcher, installers, HTTP
+src/ui/      Qt Widgets UI
+docs/        static GitHub Pages site
+packaging/   desktop entry, icon, AUR files
+tests/       headless core test
+```
+
+## Legal
+
+Rivet is not affiliated with Valve, Steam, OnlineFix, FreeTP, EOSFix or any game
+publisher. It does not host or distribute games or fixes. You are responsible
+for owning your games and for complying with copyright, anti-circumvention,
+contract and local law. Using third-party fixes with Steam may violate its terms
+and can lead to account restrictions.
+
+Read [`DISCLAIMER.md`](DISCLAIMER.md) and [`THIRD_PARTY.md`](THIRD_PARTY.md).
 
 ## License
 
