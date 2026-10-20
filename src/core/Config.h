@@ -122,5 +122,4 @@ private:
     QString m_lastError;
     bool m_migrated = false;
     bool m_promptDismissed = false;
-    bool m_migrationStatePresent = false;
 };

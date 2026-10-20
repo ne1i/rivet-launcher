@@ -89,6 +89,33 @@ int main(int argc, char **argv)
         return fail(QStringLiteral("config load: %1").arg(error));
     if (!config.migrationNeeded())
         return fail(QStringLiteral("legacy migration was not offered"));
+
+    // "No" without "never show again" must offer the prompt on the next launch.
+    if (!config.declineMigrationPrompt(false))
+        return fail(QStringLiteral("could not decline the migration prompt"));
+    {
+        Config afterNo;
+        if (!afterNo.load(&error))
+            return fail(QStringLiteral("reload after No: %1").arg(error));
+        if (!afterNo.migrationNeeded())
+            return fail(QStringLiteral("No unexpectedly suppressed the migration prompt"));
+        if (!afterNo.declineMigrationPrompt(true))
+            return fail(QStringLiteral("could not dismiss the migration prompt"));
+    }
+    {
+        Config afterNever;
+        if (!afterNever.load(&error))
+            return fail(QStringLiteral("reload after Never: %1").arg(error));
+        if (afterNever.migrationNeeded())
+            return fail(QStringLiteral("Never show again did not suppress the prompt"));
+    }
+
+    // Remove the empty config and exercise the actual conversion.
+    QFile::remove(Paths::configFile());
+    if (!config.reload(&error))
+        return fail(QStringLiteral("config reload: %1").arg(error));
+    if (!config.migrationNeeded())
+        return fail(QStringLiteral("migration was not offered after a fresh config"));
     if (!config.migrateLegacy(&error))
         return fail(QStringLiteral("legacy migration failed: %1").arg(error));
     if (!config.migratedFromLegacy())

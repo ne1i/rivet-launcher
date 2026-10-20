@@ -202,7 +202,6 @@ void Config::reset()
     m_lastError.clear();
     m_migrated = false;
     m_promptDismissed = false;
-    m_migrationStatePresent = false;
 }
 
 bool Config::load(QString *error)
@@ -262,7 +261,6 @@ bool Config::readJson(const QString &path, QString *error)
         return false;
     }
 
-    m_migrationStatePresent = root.contains(QStringLiteral("migration"));
     const QJsonObject migration = root.value(QStringLiteral("migration")).toObject();
     m_migrated = migration.value(QStringLiteral("legacy_migrated")).toBool();
     m_promptDismissed = migration.value(QStringLiteral("prompt_dismissed")).toBool();
@@ -511,17 +509,12 @@ bool Config::hasLegacyConfig()
 
 bool Config::migrationNeeded() const
 {
-    if (!hasLegacyConfig() || m_migrated || m_promptDismissed)
-        return false;
-    // A library that was migrated by an older Rivet build has no migration
-    // block yet; offer the import once. Empty libraries are always offered.
-    return m_games.isEmpty() || !m_migrationStatePresent;
+    return hasLegacyConfig() && !m_migrated && !m_promptDismissed;
 }
 
 bool Config::declineMigrationPrompt(bool neverShowAgain, QString *error)
 {
     m_promptDismissed = neverShowAgain;
-    m_migrationStatePresent = true;
     if (!save(error)) {
         if (error)
             *error = m_lastError;
@@ -609,7 +602,6 @@ bool Config::migrateLegacy(QString *error)
 
     m_migrated = true;
     m_promptDismissed = true;
-    m_migrationStatePresent = true;
     if (!save(error)) {
         if (error)
             *error = m_lastError;

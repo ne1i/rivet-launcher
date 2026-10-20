@@ -170,9 +170,9 @@ file is validated and written atomically.
 
 On first start, if an old `~/.config/OFME-Linux` setup is found, Rivet asks
 whether to import it. Choose **Yes** to copy games, play time, covers, icons and
-settings; choose **No** to start empty, with a **Never show this again** option.
-Existing Proton and prefix folders are reused in place and the old files are
-never deleted.
+settings; choose **No** to start empty. **No** keeps asking on the next launch
+unless **Never show this again** is ticked. Existing Proton and prefix folders
+are reused in place and the old files are never deleted.
 
 ## Command line
 
