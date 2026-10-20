@@ -1,171 +1,395 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Rivet — native Linux launcher for online-fixed games</title>
-  <meta name="description" content="Rivet is a fast, native Qt 6 launcher for games using OnlineFix, FreeTP and custom multiplayer fixes on Linux. Proton, Steam overlay, JSON config, Nix support.">
-  <meta name="theme-color" content="#101014">
-  <link rel="canonical" href="https://ne1i.github.io/rivet-launcher/">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Rivet — native Linux launcher for online-fixed games">
-  <meta property="og:description" content="Fast Qt 6 launcher for OnlineFix, FreeTP and custom multiplayer fixes on Linux.">
-  <meta property="og:url" content="https://ne1i.github.io/rivet-launcher/">
-  <meta property="og:image" content="https://ne1i.github.io/rivet-launcher/assets/library.webp">
-  <link rel="icon" href="assets/rivet.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rivet — native Linux launcher for online-fixed games</title>
+<meta name="description" content="Rivet is a native Qt 6 launcher for games that need OnlineFix, FreeTP or EOSFix on Linux. It handles DLL overrides, Proton, Steam and the prefix. One binary, no JRE or Electron.">
+<meta name="theme-color" content="#0c0c0d">
+<link rel="canonical" href="https://ne1i.github.io/rivet-launcher/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Rivet — native Linux launcher for online-fixed games">
+<meta property="og:description" content="Reads the fix, applies the DLL overrides, picks the Proton build, starts Steam. One Qt 6 binary.">
+<meta property="og:url" content="https://ne1i.github.io/rivet-launcher/">
+<meta property="og:image" content="https://ne1i.github.io/rivet-launcher/assets/library.webp">
+<meta property="og:image:alt" content="Rivet game library">
+<link rel="icon" href="assets/rivet.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="top">
-    <div class="wrap nav">
-      <a class="brand" href="#top" aria-label="Rivet home">
-        <img src="assets/rivet.svg" width="34" height="34" alt="">
-        <span>Rivet</span>
-      </a>
-      <nav aria-label="Main navigation">
-        <a href="#features">Features</a>
-        <a href="#install">Install</a>
-        <a href="#config">Config</a>
-        <a href="https://github.com/ne1i/rivet-launcher">GitHub</a>
-      </nav>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="wrap bar-inner">
+    <a class="brand" href="#top" aria-label="Rivet, top of page">
+      <img src="assets/rivet.svg" width="24" height="24" alt="">
+      <span>rivet</span>
+      <span class="ver">1.0</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="#install">Install</a>
+      <a href="#config">Config</a>
+      <a href="#cli">CLI</a>
+      <a href="https://github.com/ne1i/rivet-launcher">Source<span aria-hidden="true"> ↗</span></a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="wrap hero" id="top">
+    <p class="eyebrow">Linux launcher · Qt 6 · AGPL-3.0</p>
+    <h1>One window for the game,<br> the fix and the prefix.</h1>
+    <p class="lede">
+      Rivet is a native launcher for games that need OnlineFix, FreeTP or EOSFix
+      to play online. It reads the fix in the game folder, applies the DLL
+      overrides, picks the Proton build and starts Steam. Then you press Play.
+    </p>
+    <p class="cta">
+      <a class="btn" href="https://github.com/ne1i/rivet-launcher/releases/latest">Download the latest build</a>
+      <a class="btn ghost" href="#install">Installation notes</a>
+      <span class="cta-note">x86_64 and aarch64 · SHA-256 sums · rolling builds</span>
+    </p>
+
+    <dl class="facts">
+      <div>
+        <dt>Runtime</dt>
+        <dd>C++20 and Qt 6 Widgets. No JRE, Electron or embedded browser.</dd>
+      </div>
+      <div>
+        <dt>Binary</dt>
+        <dd>One dynamically linked executable per architecture.</dd>
+      </div>
+      <div>
+        <dt>Config</dt>
+        <dd>A single versioned JSON document, validated and written atomically.</dd>
+      </div>
+      <div>
+        <dt>Licence</dt>
+        <dd>AGPL-3.0. Source, issues and builds on GitHub.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <figure class="wrap fig">
+    <img src="assets/library.webp" width="1600" height="633" alt="Rivet library with eight games, covers, search field, play time and the Proton build used by each game.">
+    <figcaption><span>Fig. 1</span> Library. Covers, search, play time, and the Proton build behind each game.</figcaption>
+  </figure>
+
+  <section class="wrap split">
+    <img src="assets/detail.webp" width="1400" height="902" alt="Rivet game page showing Play and Settings, Debug, Wine tools, folders, run an .exe, logs and per-game launch and file details.">
+    <div>
+      <h2>The game page is the whole product.</h2>
+      <p class="prose">
+        No storefront, no news feed, no recommendations. Open a game and you get
+        the five things that decide whether it launches: the executable, the
+        prefix, the Proton build, the DLL overrides and the Steam AppIDs.
+      </p>
+      <p class="prose">
+        Wine tools, logs, shortcuts and a raw <code>.exe</code> runner sit in the
+        same row instead of a settings tree.
+      </p>
+      <ul class="rows">
+        <li><strong>Navigation</strong><span>Back arrow, mouse Back/Forward, <code>Esc</code>, <code>Alt+←/→</code>.</span></li>
+        <li><strong>Per-game</strong><span>Proton, prefix, launch arguments, environment variables, DLL overrides, cover and icon.</span></li>
+        <li><strong>Steam</strong><span>AppID and overlay AppID per game, overlay injection, Linux Runtime, native Wayland.</span></li>
+        <li><strong>Extras</strong><span>Desktop and application-menu shortcuts, play time, ProtonDB and SteamDB links.</span></li>
+      </ul>
     </div>
-  </header>
+  </section>
 
-  <main id="top">
-    <section class="hero wrap">
-      <div class="hero-copy">
-        <p class="eyebrow">Linux · Qt 6 · AGPL-3.0</p>
-        <h1>Your games.<br>Your fixes.<br><span>One click.</span></h1>
-        <p class="lead">
-          Rivet launches games that use OnlineFix, FreeTP and custom multiplayer
-          fixes through Proton. DLL overrides, Steam overlay, runtime and prefix
-          are handled for you — without Java, Electron or a browser runtime.
-        </p>
-        <div class="actions">
-          <a class="button primary" href="https://github.com/ne1i/rivet-launcher/releases/latest">Download</a>
-          <a class="button" href="https://github.com/ne1i/rivet-launcher">View source</a>
+  <section class="wrap sec" id="fixes">
+    <div class="sec-head">
+      <span class="num">01</span>
+      <h2>What happens to a fix</h2>
+    </div>
+    <div class="sec-body">
+      <p class="prose">
+        Fix formats are not standardised, and each one expects something
+        slightly different from the prefix. Rivet handles the common cases
+        itself.
+      </p>
+
+      <table class="spec">
+        <thead>
+          <tr><th scope="col">File</th><th scope="col">What Rivet does</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>OnlineFix.ini</code>, <code>SteamFix.ini</code></td>
+            <td>Reads <code>RealAppId</code> and <code>FakeAppId</code> into the game's
+              Steam settings, and flips <code>ExtraProtection</code> off in the file.</td>
+          </tr>
+          <tr>
+            <td>FreeTP <code>SteamFix</code> section</td>
+            <td>Patches the section in place and leaves the rest of the file alone.</td>
+          </tr>
+          <tr>
+            <td>Photon Launcher</td>
+            <td>Provides <code>Newtonsoft.Json.dll</code> when the fix expects it next
+              to the executable.</td>
+          </tr>
+          <tr>
+            <td><code>winmm.txt</code>, <code>dlllist.txt</code></td>
+            <td>Adds every listed override to the prefix, in the order the fix gives.</td>
+          </tr>
+          <tr>
+            <td>FreeTP “Steam not running” check</td>
+            <td>A replacement DLL answers the check while Steam is still starting, so
+              the game does not bail out before the first frame.</td>
+          </tr>
+          <tr>
+            <td>GE-Proton builds</td>
+            <td>Lists releases from GitHub, downloads, unpacks and removes them from
+              inside the app. Builds for the wrong CPU architecture are filtered out.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="sub">Also in the box</h3>
+      <dl class="features">
+        <div>
+          <dt>Adding games</dt>
+          <dd>An extracted folder, a RAR archive, a FreeTP or OnlineFix installer,
+            or a download from a Hydra/OnlineFix JSON list through <code>aria2c</code>.</dd>
         </div>
-        <p class="tiny">Linux x86_64 and aarch64 · animation-free · no telemetry</p>
-      </div>
-      <img class="app-icon" src="assets/rivet.svg" width="210" height="210" alt="Rivet app icon">
-    </section>
+        <div>
+          <dt>Steam</dt>
+          <dd>Starts Steam, waits for sign-in when needed, injects the overlay and
+            enables the Steam Linux Runtime.</dd>
+        </div>
+        <div>
+          <dt>Wine tools</dt>
+          <dd><code>winecfg</code>, task manager, explorer, regedit, a command prompt,
+            Winetricks, or any <code>.exe</code> inside the game prefix.</dd>
+        </div>
+        <div>
+          <dt>Logs</dt>
+          <dd>Per-game output from the last launch, kept until you need to see why
+            something failed.</dd>
+        </div>
+        <div>
+          <dt>Shortcuts</dt>
+          <dd>Desktop and application-menu entries, with the icon lifted from the
+            executable when possible.</dd>
+        </div>
+        <div>
+          <dt>Legacy library</dt>
+          <dd>Existing OFME-Linux INI files are converted on first start. The old
+            files are left untouched.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
 
-    <section class="wrap shot-wrap" aria-label="Rivet screenshot">
-      <img class="shot" src="assets/library.webp" width="1600" height="633" alt="Rivet game library">
-    </section>
+  <section class="wrap sec" id="install">
+    <div class="sec-head">
+      <span class="num">02</span>
+      <h2>Install</h2>
+    </div>
+    <div class="sec-body">
+      <p class="prose">
+        The release binary links against your system Qt 6, so the Qt runtime has
+        to be present. Pick one method.
+      </p>
 
-    <section id="features" class="wrap section">
-      <h2>Everything between the download and Play</h2>
-      <p class="section-lead">A focused launcher, not a storefront.</p>
-      <div class="grid">
-        <article class="card">
-          <h3>Library and covers</h3>
-          <p>Instant search, game icons, Steam covers and play time. Press Enter to open a game, Esc or your mouse Back button to return.</p>
-        </article>
-        <article class="card">
-          <h3>Fix detection</h3>
-          <p>OnlineFix, FreeTP and EOSFix files are detected and patched: AppIDs, ExtraProtection, Photon, winmm/dlllist and the SteamFix bypass.</p>
-        </article>
-        <article class="card">
-          <h3>Proton manager</h3>
-          <p>Browse GE-Proton releases from GitHub, download, unpack and remove builds. Incompatible CPU architectures are filtered out.</p>
-        </article>
-        <article class="card">
-          <h3>Steam integration</h3>
-          <p>Starts Steam and waits for sign-in when needed, injects the overlay, and supports Steam Linux Runtime and native Wayland.</p>
-        </article>
-        <article class="card">
-          <h3>Add any way you like</h3>
-          <p>Add an extracted folder, a RAR archive, a FreeTP installer, or download a game from a Hydra/OnlineFix JSON source with aria2c.</p>
-        </article>
-        <article class="card">
-          <h3>Wine tools</h3>
-          <p>Open winecfg, task manager, explorer, regedit, a command prompt or Winetricks in the game prefix. Run any .exe there too.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="wrap section detail-split">
-      <img class="shot" src="assets/detail.webp" width="1400" height="902" alt="Rivet game page with icon card, Play and game settings">
-      <div>
-        <h2>A game page that gets out of the way</h2>
-        <p class="section-lead">No stretched cover art. Just the game icon, the facts, and the controls you need.</p>
-        <ul class="checks">
-          <li>Back arrow, mouse Back/Forward, <code>Esc</code> and <code>Alt+←/→</code></li>
-          <li>Play, Settings, Debug, Wine tools, folders, run an .exe, logs</li>
-          <li>Per-game Proton, prefix, arguments, environment and DLL overrides</li>
-          <li>Desktop and application-menu shortcuts, play time and Steam links</li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="wrap section split">
-      <div>
-        <h2>Install</h2>
-        <p class="section-lead">One compiled binary. No bundled runtime.</p>
-        <h3>Release binary</h3>
+      <h3>Release build</h3>
+      <div class="code">
+        <div class="code-bar"><span>shell</span><button class="copy" type="button" data-copy>copy</button></div>
         <pre><code>chmod +x rivet-linux-x86_64
 ./rivet-linux-x86_64</code></pre>
-        <p class="muted">Use <code>rivet-linux-aarch64</code> on ARM64. Qt 6, Steam,
-          unrar, 7z, tar and aria2 are needed for the corresponding features.</p>
+      </div>
+      <p class="note">Use <code>rivet-linux-aarch64</code> on ARM64. Every push to
+        <code>master</code> publishes both binaries with SHA-256 sums.</p>
 
-        <h3>Nix</h3>
+      <h3>Nix</h3>
+      <div class="code">
+        <div class="code-bar"><span>shell</span><button class="copy" type="button" data-copy>copy</button></div>
         <pre><code>nix run github:ne1i/rivet-launcher</code></pre>
-        <p class="muted">Enable <code>nix-command flakes</code> first. The flake is
-          built and tested in CI.</p>
+      </div>
+      <p class="note">Flakes must be enabled. The flake is built in CI.
+        <code>unrar</code> is unfree, so NixOS needs <code>allowUnfree</code> for it.</p>
 
-        <h3>From source</h3>
+      <h3>From source</h3>
+      <div class="code">
+        <div class="code-bar"><span>shell</span><button class="copy" type="button" data-copy>copy</button></div>
         <pre><code>cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j"$(nproc)"
 sudo cmake --install build</code></pre>
-        <p class="muted">Arch packaging for <code>rivet-launcher-git</code> is in
-          <code>packaging/aur</code>. It is not published on AUR yet.</p>
       </div>
+      <p class="note">Installs the binary, desktop entry and icon. The AUR package
+        <code>rivet-launcher-git</code> lives in
+        <a href="https://github.com/ne1i/rivet-launcher/tree/master/packaging/aur/rivet-launcher-git">packaging/aur</a>
+        and is not published yet.</p>
 
-      <div id="config">
-        <h2>Configuration</h2>
-        <p class="section-lead">One versioned JSON file, not a pile of INI sections.</p>
-        <pre><code>~/.config/rivet/config.json
-~/.local/share/rivet/</code></pre>
-        <p>Settings, games, launch arguments, environment variables and feature
-          flags all live in a structured document. On first start Rivet migrates
-          an existing <code>~/.config/OFME-Linux</code> library automatically and
-          leaves the old files untouched.</p>
-        <pre><code>"environment": {
-  "LC_ALL": "fr_FR.UTF-8"
-},
-"steam": {
-  "app_id": "12345",
-  "overlay_app_id": "480"
-}</code></pre>
-        <p class="muted">Covers and icons are copied to
-          <code>~/.local/share/rivet</code>; existing Proton and prefix folders are
-          reused in place.</p>
+      <h3 class="sub">Dependencies</h3>
+      <table class="spec">
+        <tbody>
+          <tr>
+            <td>Required</td>
+            <td>Native Steam (not Flatpak or Snap), Qt 6 (Core, Gui, Widgets, Network,
+              Concurrent, Svg), <code>unrar</code>, <code>7z</code>, <code>tar</code>,
+              <code>aria2</code>.</td>
+          </tr>
+          <tr>
+            <td>Optional</td>
+            <td><code>ffmpeg</code> for icon conversion, <code>icoextract</code> for
+              better icons, <code>winetricks</code> for the Wine tools menu.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Arch Linux</h3>
+      <div class="code">
+        <div class="code-bar"><span>shell</span><button class="copy" type="button" data-copy>copy</button></div>
+        <pre><code>sudo pacman -S --needed base-devel cmake qt6-base qt6-svg steam unrar 7zip \
+    ffmpeg icoextract winetricks aria2</code></pre>
       </div>
-    </section>
-
-    <section class="wrap section legal">
-      <h2>Before you use it</h2>
-      <p>
-        Rivet does not host or distribute games, cracks or fixes. You must own
-        the games you run and comply with copyright, anti-circumvention, contract
-        and local law. Using third-party fixes with Steam may violate its terms
-        and can lead to account restrictions. Nothing here is legal advice.
-      </p>
-      <p>
-        <a href="https://github.com/ne1i/rivet-launcher/blob/master/DISCLAIMER.md">Read the full disclaimer</a>
-        · <a href="https://github.com/ne1i/rivet-launcher/blob/master/THIRD_PARTY.md">Third-party notices</a>
-      </p>
-    </section>
-  </main>
-
-  <footer class="wrap">
-    <div>
-      <img src="assets/rivet.svg" width="26" height="26" alt="">
-      <span>Rivet</span>
     </div>
-    <p>Native Linux launcher for online-fixed games. AGPL-3.0.</p>
-    <p><a href="https://github.com/ne1i/rivet-launcher">GitHub</a> · <a href="https://github.com/ne1i/rivet-launcher/releases">Releases</a> · <a href="https://github.com/ne1i/rivet-launcher/blob/master/README.md">Documentation</a></p>
-  </footer>
+  </section>
+
+  <section class="wrap sec" id="config">
+    <div class="sec-head">
+      <span class="num">03</span>
+      <h2>Configuration</h2>
+    </div>
+    <div class="sec-body wide">
+      <p class="prose">
+        One versioned JSON document holds the settings and every game. It is
+        validated on load and written atomically, so an interrupted save cannot
+        leave you with half a library.
+      </p>
+
+      <div class="cfg">
+        <div>
+          <div class="code">
+            <div class="code-bar"><span>paths</span></div>
+            <pre><code>~/.config/rivet/config.json
+~/.local/share/rivet/
+├── covers/
+├── icons/
+├── protons/
+└── prefixes/</code></pre>
+          </div>
+          <p class="prose">
+            If <code>config.json</code> is missing, Rivet imports
+            <code>~/.config/OFME-Linux/Games.ini</code> and
+            <code>Launcher.ini</code> on first start. Covers and icons are copied
+            to the new data directory, and existing Proton and prefix folders are
+            reused where they are.
+          </p>
+        </div>
+
+        <div class="code json">
+          <div class="code-bar"><span>config.json</span><button class="copy" type="button" data-copy>copy</button></div>
+          <pre><code><span class="p">{</span>
+  <span class="k">"format"</span><span class="p">:</span> <span class="s">"rivet"</span><span class="p">,</span>
+  <span class="k">"version"</span><span class="p">:</span> <span class="n">1</span><span class="p">,</span>
+  <span class="k">"settings"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="k">"default_proton"</span><span class="p">:</span> <span class="s">"GE-Proton Latest"</span><span class="p">,</span>
+    <span class="k">"new_games"</span><span class="p">:</span> <span class="p">{</span> <span class="k">"native_wayland"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="k">"wined3d"</span><span class="p">:</span> <span class="n">false</span> <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="k">"games"</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="k">"name"</span><span class="p">:</span> <span class="s">"Example Game"</span><span class="p">,</span>
+      <span class="k">"executable"</span><span class="p">:</span> <span class="s">"/games/Example/Example.exe"</span><span class="p">,</span>
+      <span class="k">"prefix"</span><span class="p">:</span> <span class="s">"/games/Example/Rivet Prefix"</span><span class="p">,</span>
+      <span class="k">"proton"</span><span class="p">:</span> <span class="s">"GE-Proton Latest"</span><span class="p">,</span>
+      <span class="k">"environment"</span><span class="p">:</span> <span class="p">{</span> <span class="k">"LC_ALL"</span><span class="p">:</span> <span class="s">"fr_FR.UTF-8"</span> <span class="p">},</span>
+      <span class="k">"steam"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="k">"app_id"</span><span class="p">:</span> <span class="s">"12345"</span><span class="p">,</span>
+        <span class="k">"overlay_app_id"</span><span class="p">:</span> <span class="s">"480"</span>
+      <span class="p">},</span>
+      <span class="k">"features"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="k">"steam_overlay"</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="k">"steam_runtime"</span><span class="p">:</span> <span class="n">true</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap sec" id="cli">
+    <div class="sec-head">
+      <span class="num">04</span>
+      <h2>Command line</h2>
+    </div>
+    <div class="sec-body">
+      <p class="prose">
+        The GUI is not the only entry point. The CLI is useful for shortcuts and
+        scripts, and for seeing exactly what a launch will run.
+      </p>
+
+      <dl class="cli">
+        <div><dt>rivet</dt><dd>Open the launcher.</dd></div>
+        <div><dt>rivet --launch "Game name"</dt><dd>Launch a game directly.</dd></div>
+        <div><dt>rivet "Game name"</dt><dd>Same as <code>--launch</code>.</dd></div>
+        <div><dt>rivet --list</dt><dd>List games and their executables.</dd></div>
+        <div><dt>rivet --print-command "Game name"</dt><dd>Print the Proton command and environment without starting the game.</dd></div>
+        <div><dt>rivet --version</dt><dd>Print the version.</dd></div>
+      </dl>
+
+      <p class="note"><code>--print-command</code> is the quickest way to debug a
+        prefix that refuses to start. It shows the binary, the environment and
+        the overrides in the order they will be applied.</p>
+    </div>
+  </section>
+
+  <section class="wrap sec legal" id="legal">
+    <div class="sec-head">
+      <span class="num">05</span>
+      <h2>Before you use it</h2>
+    </div>
+    <div class="sec-body">
+      <p>
+        Rivet does not host or distribute games, cracks or fixes. You need to own
+        the games you run and comply with copyright, anti-circumvention, contract
+        and local law. Using third-party fixes with Steam may violate Steam's
+        terms and can lead to account restrictions. None of this is legal advice.
+      </p>
+      <p class="note">
+        <a href="https://github.com/ne1i/rivet-launcher/blob/master/DISCLAIMER.md">Full disclaimer</a> ·
+        <a href="https://github.com/ne1i/rivet-launcher/blob/master/THIRD_PARTY.md">Third-party notices</a> ·
+        <a href="https://github.com/ne1i/rivet-launcher/blob/master/LICENSE">AGPL-3.0</a>
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div class="foot-brand">
+      <img src="assets/rivet.svg" width="22" height="22" alt="">
+      <span>rivet</span>
+      <p>Native Linux launcher for online-fixed games.</p>
+    </div>
+    <nav aria-label="Project">
+      <a href="https://github.com/ne1i/rivet-launcher">GitHub</a>
+      <a href="https://github.com/ne1i/rivet-launcher/releases">Releases</a>
+      <a href="https://github.com/ne1i/rivet-launcher/issues">Issues</a>
+      <a href="https://github.com/ne1i/rivet-launcher/blob/master/README.md">README</a>
+    </nav>
+    <p class="colophon">AGPL-3.0 · no telemetry · no CDN</p>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll('[data-copy]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var block = button.closest('.code');
+    var text = block ? block.querySelector('code').innerText : '';
+    navigator.clipboard.writeText(text).then(function () {
+      button.textContent = 'copied';
+      setTimeout(function () { button.textContent = 'copy'; }, 1600);
+    }).catch(function () {
+      button.textContent = 'select and copy';
+    });
+  });
+});
+</script>
 </body>
 </html>
