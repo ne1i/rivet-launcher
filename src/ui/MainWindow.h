@@ -29,6 +29,7 @@ public:
 
     void handleIpcCommand(const QString &command);
     void showWindow();
+    bool handleNavigationButton(Qt::MouseButton button);
     bool minimalMode() const { return m_minimalMode; }
 
 protected:
@@ -36,7 +37,6 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
-    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     void buildUi();

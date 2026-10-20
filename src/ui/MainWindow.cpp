@@ -70,7 +70,6 @@ MainWindow::MainWindow(Config *store, ProtonManager *protons, Runner *runner,
     setFocusPolicy(Qt::StrongFocus);
 
     buildUi();
-    qApp->installEventFilter(this);
     setupTray();
     reloadLibrary();
     updateStatusBar();
@@ -832,23 +831,21 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QApplication::quit();
 }
 
-bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+bool MainWindow::handleNavigationButton(Qt::MouseButton button)
 {
-    if (event->type() == QEvent::MouseButtonPress
-        && !QApplication::activeModalWidget()) {
-        auto *mouse = static_cast<QMouseEvent *>(event);
-        if (mouse->button() == Qt::BackButton) {
-            if (m_pages->currentIndex() == 1)
-                showLibrary();
-            return true;
-        }
-        if (mouse->button() == Qt::ForwardButton) {
-            if (m_pages->currentIndex() == 0 && !m_lastGame.isEmpty())
-                showDetail(m_lastGame);
-            return true;
-        }
+    if (QApplication::activeModalWidget())
+        return false;
+    if (button == Qt::BackButton) {
+        if (m_pages->currentIndex() == 1)
+            showLibrary();
+        return true;
     }
-    return QMainWindow::eventFilter(watched, event);
+    if (button == Qt::ForwardButton) {
+        if (m_pages->currentIndex() == 0 && !m_lastGame.isEmpty())
+            showDetail(m_lastGame);
+        return true;
+    }
+    return false;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)

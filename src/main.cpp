@@ -9,6 +9,8 @@
 
 #include <QApplication>
 #include <QCheckBox>
+#include <QDebug>
+#include <QMouseEvent>
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QLocalServer>
@@ -16,9 +18,34 @@
 #include <QMessageBox>
 #include <QTextStream>
 
+#include <functional>
+
 #include <unistd.h>
 
 namespace {
+
+class RivetApplication : public QApplication
+{
+public:
+    using QApplication::QApplication;
+
+    std::function<bool(Qt::MouseButton)> mouseNavigation;
+
+    bool notify(QObject *receiver, QEvent *event) override
+    {
+        if (event->type() == QEvent::MouseButtonPress) {
+            auto *mouse = static_cast<QMouseEvent *>(event);
+            if (qEnvironmentVariableIsSet("RIVET_MOUSE_DEBUG"))
+                qInfo() << "mouse press:" << mouse->button();
+            if (mouseNavigation
+                && (mouse->button() == Qt::BackButton || mouse->button() == Qt::ForwardButton)) {
+                if (mouseNavigation(mouse->button()))
+                    return true;
+            }
+        }
+        return QApplication::notify(receiver, event);
+    }
+};
 
 QString socketName()
 {
@@ -162,7 +189,7 @@ int main(int argc, char *argv[])
         return runConsoleCommand(options);
     }
 
-    QApplication app(argc, argv);
+    RivetApplication app(argc, argv);
     QApplication::setApplicationName(QStringLiteral("Rivet"));
     QApplication::setApplicationDisplayName(QStringLiteral("Rivet"));
     QApplication::setApplicationVersion(QStringLiteral("1.0.0"));
@@ -222,6 +249,9 @@ int main(int argc, char *argv[])
     ProtonManager protons(&store);
     Runner runner(&store, &protons);
     MainWindow window(&store, &protons, &runner, hasLaunch, options.launch);
+    app.mouseNavigation = [&window](Qt::MouseButton button) {
+        return window.handleNavigationButton(button);
+    };
 
     QLocalServer server;
     QLocalServer::removeServer(socketName());
