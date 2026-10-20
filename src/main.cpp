@@ -8,6 +8,7 @@
 #include "ui/Theme.h"
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QLocalServer>
@@ -194,6 +195,28 @@ int main(int argc, char *argv[])
     if (!store.load(&loadError)) {
         QMessageBox::critical(nullptr, QStringLiteral("Rivet"), loadError);
         return 1;
+    }
+
+    if (store.migrationNeeded()) {
+        QMessageBox box(QMessageBox::Question,
+                        QStringLiteral("Migrate existing configuration?"),
+                        QStringLiteral(
+                            "An OnlineFix launcher configuration was found.\n\n"
+                            "Import its games, play time, covers, icons and settings into Rivet?\n\n"
+                            "The old files will not be deleted."),
+                        QMessageBox::Yes | QMessageBox::No, nullptr);
+        auto *never = new QCheckBox(QStringLiteral("Never show this again"));
+        box.setCheckBox(never);
+        box.setDefaultButton(QMessageBox::Yes);
+        const int answer = box.exec();
+        if (answer == QMessageBox::Yes) {
+            QString migrationError;
+            if (!store.migrateLegacy(&migrationError)) {
+                QMessageBox::critical(nullptr, QStringLiteral("Migration failed"), migrationError);
+            }
+        } else {
+            store.declineMigrationPrompt(never->isChecked());
+        }
     }
 
     ProtonManager protons(&store);

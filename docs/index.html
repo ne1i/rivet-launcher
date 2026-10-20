@@ -273,11 +273,10 @@ sudo cmake --install build</code></pre>
 └── prefixes/</code></pre>
           </div>
           <p class="prose">
-            If <code>config.json</code> is missing, Rivet imports
-            <code>~/.config/OFME-Linux/Games.ini</code> and
-            <code>Launcher.ini</code> on first start. Covers and icons are copied
-            to the new data directory, and existing Proton and prefix folders are
-            reused where they are.
+            On first start, if an old <code>~/.config/OFME-Linux</code> setup is
+            found, Rivet asks whether to import its games, play time and settings.
+            Choose “Never show this again” to skip the prompt in the future. Old
+            files are never deleted.
           </p>
         </div>
 

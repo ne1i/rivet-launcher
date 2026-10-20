@@ -201,6 +201,8 @@ void Config::reset()
     m_settings = ConfigSettings{};
     m_lastError.clear();
     m_migrated = false;
+    m_promptDismissed = false;
+    m_migrationStatePresent = false;
 }
 
 bool Config::load(QString *error)
@@ -215,23 +217,6 @@ bool Config::reload(QString *error)
 
     if (QFileInfo::exists(Paths::configFile())) {
         if (!readJson(Paths::configFile(), &m_lastError)) {
-            if (error)
-                *error = m_lastError;
-            return false;
-        }
-        return true;
-    }
-
-    const bool legacyExists = QFileInfo::exists(legacyConfigDir() + QStringLiteral("/Games.ini"))
-        || QFileInfo::exists(legacyConfigDir() + QStringLiteral("/Launcher.ini"));
-    if (legacyExists) {
-        if (!migrateLegacy(&m_lastError)) {
-            if (error)
-                *error = m_lastError;
-            return false;
-        }
-        m_migrated = true;
-        if (!writeJson(Paths::configFile(), &m_lastError)) {
             if (error)
                 *error = m_lastError;
             return false;
@@ -277,6 +262,11 @@ bool Config::readJson(const QString &path, QString *error)
         return false;
     }
 
+    m_migrationStatePresent = root.contains(QStringLiteral("migration"));
+    const QJsonObject migration = root.value(QStringLiteral("migration")).toObject();
+    m_migrated = migration.value(QStringLiteral("legacy_migrated")).toBool();
+    m_promptDismissed = migration.value(QStringLiteral("prompt_dismissed")).toBool();
+
     const QJsonObject settings = root.value(QStringLiteral("settings")).toObject();
     m_settings.defaultProton = settings.value(QStringLiteral("default_proton"))
                                    .toString(QStringLiteral("GE-Proton Latest"));
@@ -311,6 +301,11 @@ bool Config::writeJson(const QString &path, QString *error) const
     QJsonObject root;
     root.insert(QStringLiteral("format"), QLatin1String(kFormat));
     root.insert(QStringLiteral("version"), kSchemaVersion);
+
+    QJsonObject migration;
+    migration.insert(QStringLiteral("legacy_migrated"), m_migrated);
+    migration.insert(QStringLiteral("prompt_dismissed"), m_promptDismissed);
+    root.insert(QStringLiteral("migration"), migration);
 
     QJsonObject settings;
     settings.insert(QStringLiteral("default_proton"),
@@ -508,10 +503,38 @@ QString Config::prefixesPath() const
                                              : m_settings.prefixesPath;
 }
 
+bool Config::hasLegacyConfig()
+{
+    return QFileInfo::exists(legacyConfigDir() + QStringLiteral("/Games.ini"))
+        || QFileInfo::exists(legacyConfigDir() + QStringLiteral("/Launcher.ini"));
+}
+
+bool Config::migrationNeeded() const
+{
+    if (!hasLegacyConfig() || m_migrated || m_promptDismissed)
+        return false;
+    // A library that was migrated by an older Rivet build has no migration
+    // block yet; offer the import once. Empty libraries are always offered.
+    return m_games.isEmpty() || !m_migrationStatePresent;
+}
+
+bool Config::declineMigrationPrompt(bool neverShowAgain, QString *error)
+{
+    m_promptDismissed = neverShowAgain;
+    m_migrationStatePresent = true;
+    if (!save(error)) {
+        if (error)
+            *error = m_lastError;
+        return false;
+    }
+    return true;
+}
+
 bool Config::migrateLegacy(QString *error)
 {
     const QString oldConfig = legacyConfigDir();
     const QString oldData = legacyDataDir();
+    const bool hadGames = !m_games.isEmpty();
 
     IniFile gamesIni;
     IniFile launcherIni;
@@ -524,26 +547,28 @@ bool Config::migrateLegacy(QString *error)
     }
 
     const QString user = QStringLiteral("User Settings");
-    m_settings.defaultProton = launcherIni.value(user, QStringLiteral("defaultProton"),
-                                                 QStringLiteral("GE-Proton Latest"));
-    if (m_settings.defaultProton.isEmpty())
-        m_settings.defaultProton = QStringLiteral("GE-Proton Latest");
-    m_settings.noSteamRequest = launcherIni.boolValue(user, QStringLiteral("noSteamRequest"));
-    m_settings.fullscreen = launcherIni.boolValue(user, QStringLiteral("fullscreen"));
-    m_settings.useWayland = launcherIni.boolValue(user, QStringLiteral("gamesUsesWayland"));
-    m_settings.useWined3d = launcherIni.boolValue(user, QStringLiteral("gamesUsesWined3d"));
-    m_settings.downloadsPath = launcherIni.value(user, QStringLiteral("downloadsPath"));
-    m_settings.installsPath = launcherIni.value(user, QStringLiteral("installsPath"));
-    m_settings.downloadsSource = launcherIni.value(user, QStringLiteral("downloadsSource"));
+    if (!hadGames) {
+        m_settings.defaultProton = launcherIni.value(user, QStringLiteral("defaultProton"),
+                                                     QStringLiteral("GE-Proton Latest"));
+        if (m_settings.defaultProton.isEmpty())
+            m_settings.defaultProton = QStringLiteral("GE-Proton Latest");
+        m_settings.noSteamRequest = launcherIni.boolValue(user, QStringLiteral("noSteamRequest"));
+        m_settings.fullscreen = launcherIni.boolValue(user, QStringLiteral("fullscreen"));
+        m_settings.useWayland = launcherIni.boolValue(user, QStringLiteral("gamesUsesWayland"));
+        m_settings.useWined3d = launcherIni.boolValue(user, QStringLiteral("gamesUsesWined3d"));
+        m_settings.downloadsPath = launcherIni.value(user, QStringLiteral("downloadsPath"));
+        m_settings.installsPath = launcherIni.value(user, QStringLiteral("installsPath"));
+        m_settings.downloadsSource = launcherIni.value(user, QStringLiteral("downloadsSource"));
 
-    // Reuse the old Proton/prefix roots when they exist: they can contain many
-    // gigabytes and the per-game prefix paths already point there.
-    m_settings.protonsPath = launcherIni.value(user, QStringLiteral("protonsPath"));
-    if (m_settings.protonsPath.isEmpty() && QFileInfo(oldData + QStringLiteral("/protons")).isDir())
-        m_settings.protonsPath = oldData + QStringLiteral("/protons");
-    m_settings.prefixesPath = launcherIni.value(user, QStringLiteral("prefixesPath"));
-    if (m_settings.prefixesPath.isEmpty() && QFileInfo(oldData + QStringLiteral("/prefixes")).isDir())
-        m_settings.prefixesPath = oldData + QStringLiteral("/prefixes");
+        // Reuse the old Proton/prefix roots when they exist: they can contain many
+        // gigabytes and the per-game prefix paths already point there.
+        m_settings.protonsPath = launcherIni.value(user, QStringLiteral("protonsPath"));
+        if (m_settings.protonsPath.isEmpty() && QFileInfo(oldData + QStringLiteral("/protons")).isDir())
+            m_settings.protonsPath = oldData + QStringLiteral("/protons");
+        m_settings.prefixesPath = launcherIni.value(user, QStringLiteral("prefixesPath"));
+        if (m_settings.prefixesPath.isEmpty() && QFileInfo(oldData + QStringLiteral("/prefixes")).isDir())
+            m_settings.prefixesPath = oldData + QStringLiteral("/prefixes");
+    }
 
     const QString oldIcons = oldConfig + QStringLiteral("/icons");
     const QString oldBanners = oldConfig + QStringLiteral("/banners");
@@ -574,9 +599,21 @@ bool Config::migrateLegacy(QString *error)
         game.nativeWayland = gamesIni.boolValue(name, QStringLiteral("nativeWayland"));
         game.timeSpent = gamesIni.longLongValue(name, QStringLiteral("timeSpent"));
 
+        if (hasGame(game.name))
+            continue;
+
         game.icon = migrateAsset(game.icon, oldIcons, Paths::iconsDir());
         game.banner = migrateAsset(game.banner, oldBanners, Paths::coversDir());
         m_games.append(game);
+    }
+
+    m_migrated = true;
+    m_promptDismissed = true;
+    m_migrationStatePresent = true;
+    if (!save(error)) {
+        if (error)
+            *error = m_lastError;
+        return false;
     }
 
     qInfo("Rivet migrated %d games from %s", int(m_games.size()), qPrintable(oldConfig));

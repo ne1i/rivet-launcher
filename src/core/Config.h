@@ -58,6 +58,11 @@ public:
     bool reload(QString *error = nullptr);
     bool save(QString *error = nullptr);
 
+    static bool hasLegacyConfig();
+    bool migrationNeeded() const;
+    bool migrateLegacy(QString *error = nullptr);
+    bool declineMigrationPrompt(bool neverShowAgain, QString *error = nullptr);
+
     QStringList gameNames() const;
     QVector<Game> games() const { return m_games; }
     int gameCount() const;
@@ -110,11 +115,12 @@ public:
 private:
     bool readJson(const QString &path, QString *error);
     bool writeJson(const QString &path, QString *error) const;
-    bool migrateLegacy(QString *error);
     void reset();
 
     QVector<Game> m_games;
     ConfigSettings m_settings;
     QString m_lastError;
     bool m_migrated = false;
+    bool m_promptDismissed = false;
+    bool m_migrationStatePresent = false;
 };

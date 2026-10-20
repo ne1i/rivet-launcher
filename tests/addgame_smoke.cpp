@@ -87,8 +87,14 @@ int main(int argc, char **argv)
     QString error;
     if (!config.load(&error))
         return fail(QStringLiteral("config load: %1").arg(error));
+    if (!config.migrationNeeded())
+        return fail(QStringLiteral("legacy migration was not offered"));
+    if (!config.migrateLegacy(&error))
+        return fail(QStringLiteral("legacy migration failed: %1").arg(error));
     if (!config.migratedFromLegacy())
         return fail(QStringLiteral("legacy config was not migrated"));
+    if (config.migrationNeeded())
+        return fail(QStringLiteral("migration prompt was not cleared"));
 
     const Game migrated = config.game(QStringLiteral("Legacy Game"));
     if (!migrated.isValid())

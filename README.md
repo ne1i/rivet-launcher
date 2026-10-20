@@ -168,10 +168,11 @@ file is validated and written atomically.
 }
 ```
 
-On first start, if `~/.config/rivet/config.json` does not exist, Rivet converts
-`~/.config/OFME-Linux/Games.ini` and `Launcher.ini` automatically. Covers and
-icons are copied into the new data folder; existing Proton and prefix folders
-are reused in place. The old files are left untouched.
+On first start, if an old `~/.config/OFME-Linux` setup is found, Rivet asks
+whether to import it. Choose **Yes** to copy games, play time, covers, icons and
+settings; choose **No** to start empty, with a **Never show this again** option.
+Existing Proton and prefix folders are reused in place and the old files are
+never deleted.
 
 ## Command line
 
@@ -195,8 +196,9 @@ cmake --build build -j"$(nproc)"
 ctest --test-dir build --output-on-failure
 ```
 
-The headless test covers legacy INI → JSON migration, structured environment
-values, the add-game pipeline and a JSON round-trip.
+The headless test covers legacy INI → JSON migration, the migration prompt
+state, structured environment values, the add-game pipeline and a JSON
+round-trip.
 
 Project layout:
 

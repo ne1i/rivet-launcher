@@ -75,9 +75,7 @@ MainWindow::MainWindow(Config *store, ProtonManager *protons, Runner *runner,
     reloadLibrary();
     updateStatusBar();
     if (m_store->migratedFromLegacy()) {
-        showToast(QStringLiteral("Imported %1 games into Rivet's new config.")
-                      .arg(m_store->gameCount()),
-                  5000);
+        showToast(QStringLiteral("Existing configuration imported into Rivet."), 5000);
     }
 
     connect(m_runner, &Runner::statusChanged, this, [this](const QString &message) {
