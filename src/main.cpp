@@ -10,6 +10,10 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QDebug>
+#include <QKeyEvent>
+#include <QLineEdit>
+#include <QPlainTextEdit>
+#include <QTextEdit>
 #include <QMouseEvent>
 #include <QCoreApplication>
 #include <QFileInfo>
@@ -41,6 +45,34 @@ public:
                 && (mouse->button() == Qt::BackButton || mouse->button() == Qt::ForwardButton)) {
                 if (mouseNavigation(mouse->button()))
                     return true;
+            }
+        }
+        if (event->type() == QEvent::KeyPress) {
+            auto *key = static_cast<QKeyEvent *>(event);
+            if (qEnvironmentVariableIsSet("RIVET_MOUSE_DEBUG"))
+                qInfo() << "key press:" << key->key() << key->text();
+            if (mouseNavigation && key->modifiers() == Qt::NoModifier) {
+                if (key->key() == Qt::Key_Back) {
+                    if (mouseNavigation(Qt::BackButton))
+                        return true;
+                } else if (key->key() == Qt::Key_Forward) {
+                    if (mouseNavigation(Qt::ForwardButton))
+                        return true;
+                }
+            }
+            if (mouseNavigation && key->modifiers() == Qt::AltModifier) {
+                QWidget *focus = QApplication::focusWidget();
+                const bool editingText = qobject_cast<QLineEdit *>(focus)
+                    || qobject_cast<QTextEdit *>(focus) || qobject_cast<QPlainTextEdit *>(focus);
+                if (!editingText) {
+                    if (key->key() == Qt::Key_Left) {
+                        if (mouseNavigation(Qt::BackButton))
+                            return true;
+                    } else if (key->key() == Qt::Key_Right) {
+                        if (mouseNavigation(Qt::ForwardButton))
+                            return true;
+                    }
+                }
             }
         }
         return QApplication::notify(receiver, event);
